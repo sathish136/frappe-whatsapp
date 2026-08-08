@@ -1,5 +1,9 @@
 # THS WhatsApp / frappe-whatsapp
 
+<p align="center">
+  <img src="docs/logo.png" alt="THS WhatsApp logo" width="160" />
+</p>
+
 WhatsApp Meta Cloud API integration for ERPNext / Frappe.
 
 **Copyright (c) 2026 THS Solution**

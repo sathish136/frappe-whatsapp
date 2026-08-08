@@ -10,5 +10,7 @@ def get_data():
 			"module_name": "WhatsApp Meta",
 			"type": "module",
 			"label": _("WhatsApp Meta"),
+			"icon": "octicon octicon-comment-discussion",
+			"color": "#0F766E",
 		}
 	]
