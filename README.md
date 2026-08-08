@@ -41,10 +41,10 @@ Declared in `pyproject.toml` for Frappe Cloud / Marketplace:
 
 ```toml
 [tool.bench.frappe-dependencies]
-frappe = ">=14.0.0,<17.0.0"
+frappe = ">=13.0.0,<17.0.0"
 ```
 
-Supports **Frappe v14**, **v15**, and **v16**.
+Supports **Frappe v13**, **v14**, **v15**, and **v16**.
 
 ## Install
 
