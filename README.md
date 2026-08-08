@@ -6,6 +6,22 @@ WhatsApp Meta Cloud API integration for ERPNext / Frappe.
 
 Repository: https://github.com/sathish136/frappe-whatsapp
 
+## Screenshots
+
+### Workspace
+![WhatsApp Workspace](docs/screenshots/03-workspace.png)
+
+### WhatsApp Settings
+![WhatsApp Settings - When to Send](docs/screenshots/04-settings-when-to-send.png)
+
+![WhatsApp Settings - Credentials](docs/screenshots/05-settings-credentials.png)
+
+### Message Templates
+![WhatsApp Message Templates](docs/screenshots/01-message-templates.png)
+
+### Message Log
+![WhatsApp Message Log](docs/screenshots/02-message-log.png)
+
 ## Features
 
 - WhatsApp Settings (Meta credentials, when-to-send rules)
@@ -14,6 +30,15 @@ Repository: https://github.com/sathish136/frappe-whatsapp
 - Auto-send on Quotation submit / Support Ticket create & status change
 - Invoice due reminder every N days (scheduler)
 - WhatsApp Message Log for outbound messages
+
+## Compatibility
+
+Declared in `pyproject.toml` for Frappe Cloud / Marketplace:
+
+```toml
+[tool.bench.frappe-dependencies]
+frappe = ">=16.0.0,<17.0.0"
+```
 
 ## Install
 

@@ -2,7 +2,15 @@
 // License: MIT. See LICENSE
 
 frappe.listview_settings["WhatsApp Message Template"] = {
-	add_fields: ["status", "body_param_count", "category", "related_doctype"],
+	add_fields: [
+		"status",
+		"body_param_count",
+		"category",
+		"related_doctype",
+		"header_type",
+		"header_image",
+		"header_media",
+	],
 	onload(listview) {
 		listview.page.add_inner_button(__("Sync from Meta"), () => {
 			frappe.call({
@@ -46,5 +54,24 @@ frappe.listview_settings["WhatsApp Message Template"] = {
 			colors[doc.status] || "grey",
 			"status,=," + doc.status,
 		];
+	},
+	formatters: {
+		header_type(value, df, doc) {
+			const type = value || "None";
+			const icons = {
+				None: "—",
+				Text: "📝 Text",
+				Image: "🖼 Image",
+				Video: "🎬 Video",
+				Document: "📄 Document",
+			};
+			let html = `<span>${icons[type] || frappe.utils.escape_html(type)}</span>`;
+			if (type === "Image" && doc.header_image) {
+				html += ` <img src="${frappe.utils.escape_html(
+					doc.header_image
+				)}" style="height:28px;width:28px;object-fit:cover;border-radius:4px;margin-left:6px;vertical-align:middle;border:1px solid #d1d8dd;">`;
+			}
+			return html;
+		},
 	},
 };

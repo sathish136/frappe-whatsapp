@@ -21,7 +21,9 @@
   "section_content",
   "header_type",
   "header_text",
+  "header_image",
   "header_media",
+  "header_media_preview",
   "header_help",
   "body_text",
   "footer_text",
@@ -121,6 +123,8 @@
    "description": "Header can be Text, Image, Video, or Document (Meta template header types)",
    "fieldname": "header_type",
    "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Header Type",
    "options": "None\nText\nImage\nVideo\nDocument"
   },
@@ -132,17 +136,29 @@
    "label": "Header Text"
   },
   {
-   "depends_on": "eval:['Image','Video','Document'].includes(doc.header_type)",
-   "description": "Sample media for preview / Meta approval (Image JPG/PNG, Video MP4, Document PDF)",
+   "depends_on": "eval:doc.header_type=='Image'",
+   "description": "Sample header image (JPG/PNG) — shown in preview and list",
+   "fieldname": "header_image",
+   "fieldtype": "Attach Image",
+   "label": "Header Image"
+  },
+  {
+   "depends_on": "eval:['Video','Document'].includes(doc.header_type)",
+   "description": "Sample video (MP4) or document (PDF) for Meta approval / preview",
    "fieldname": "header_media",
    "fieldtype": "Attach",
-   "label": "Header Media Sample"
+   "label": "Header Media (Video / Document)"
+  },
+  {
+   "fieldname": "header_media_preview",
+   "fieldtype": "HTML",
+   "label": "Media Preview"
   },
   {
    "fieldname": "header_help",
    "fieldtype": "HTML",
    "label": "Header Help",
-   "options": "<div class=\"text-muted\" style=\"margin-bottom:8px\">Header types supported by WhatsApp: <b>Text</b>, <b>Image</b>, <b>Video</b>, <b>Document</b>. Body is always text (with optional {{1}} variables). Footer is optional text.</div>"
+   "options": "<div class=\"text-muted\" style=\"margin-bottom:8px\">Header types: <b>Text</b>, <b>Image</b>, <b>Video</b>, <b>Document</b>. Upload sample media for Image/Video/Document — it appears in the side Preview.</div>"
   },
   {
    "description": "Use {{1}}, {{2}}, … for variables. Example: Hello {{1}}, payment of {{2}} is due on {{3}}.",
