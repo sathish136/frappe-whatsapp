@@ -31,30 +31,117 @@ def normalize_phone(number: str | None) -> str | None:
 	return digits
 
 
+def _contact_phone(contact_name: str | None) -> str | None:
+	"""Best mobile/phone from a Contact (and child Contact Phone rows)."""
+	if not contact_name or not frappe.db.exists("Contact", contact_name):
+		return None
+	row = frappe.db.get_value("Contact", contact_name, ["mobile_no", "phone"], as_dict=True)
+	if row:
+		for key in ("mobile_no", "phone"):
+			num = normalize_phone(row.get(key))
+			if num:
+				return num
+	# Child table phones — prefer primary mobile
+	phones = frappe.get_all(
+		"Contact Phone",
+		filters={"parent": contact_name},
+		fields=["phone", "is_primary_mobile_no", "is_primary_phone"],
+		order_by="is_primary_mobile_no desc, is_primary_phone desc",
+	)
+	for p in phones:
+		num = normalize_phone(p.get("phone"))
+		if num:
+			return num
+	return None
+
+
+def _party_phone(party_type: str | None, party: str | None) -> str | None:
+	"""Resolve phone from Customer / Lead and their primary contact."""
+	if not party:
+		return None
+	if party_type == "Customer" and frappe.db.exists("Customer", party):
+		cust = frappe.db.get_value(
+			"Customer", party, ["mobile_no", "customer_primary_contact"], as_dict=True
+		)
+		if cust:
+			num = normalize_phone(cust.get("mobile_no"))
+			if num:
+				return num
+			num = _contact_phone(cust.get("customer_primary_contact"))
+			if num:
+				return num
+		# Any linked contact
+		links = frappe.get_all(
+			"Dynamic Link",
+			filters={"link_doctype": "Customer", "link_name": party, "parenttype": "Contact"},
+			fields=["parent"],
+			limit=5,
+		)
+		for link in links:
+			num = _contact_phone(link.parent)
+			if num:
+				return num
+	elif party_type == "Lead" and frappe.db.exists("Lead", party):
+		lead = frappe.db.get_value("Lead", party, ["mobile_no", "phone"], as_dict=True)
+		if lead:
+			for key in ("mobile_no", "phone"):
+				num = normalize_phone(lead.get(key))
+				if num:
+					return num
+	return None
+
+
+def _address_phone(*address_names: str | None) -> str | None:
+	for name in address_names:
+		if not name:
+			continue
+		phone = frappe.db.get_value("Address", name, "phone")
+		num = normalize_phone(phone)
+		if num:
+			return num
+	return None
+
+
 def get_recipient_number(doc) -> str | None:
-	"""Resolve mobile number from document / linked contact."""
+	"""Resolve mobile number from document / linked contact / party / address."""
 	doctype = doc.doctype
 
 	if doctype == "Quotation":
 		if doc.get("contact_mobile"):
-			return normalize_phone(doc.contact_mobile)
-		if doc.get("contact_person"):
-			mobile = frappe.db.get_value("Contact", doc.contact_person, "mobile_no")
-			return normalize_phone(mobile)
+			num = normalize_phone(doc.contact_mobile)
+			if num:
+				return num
+		num = _contact_phone(doc.get("contact_person"))
+		if num:
+			return num
+		# quotation_to: Customer | Lead ; party_name holds the link
+		party_type = doc.get("quotation_to") or "Customer"
+		num = _party_phone(party_type, doc.get("party_name"))
+		if num:
+			return num
+		num = _address_phone(
+			doc.get("customer_address"),
+			doc.get("shipping_address_name"),
+			doc.get("company_address"),
+		)
+		if num:
+			return num
+		return None
 
-	elif doctype == "Sales Invoice":
+	if doctype == "Sales Invoice":
 		if doc.get("contact_mobile"):
-			return normalize_phone(doc.contact_mobile)
-		if doc.get("contact_person"):
-			mobile = frappe.db.get_value("Contact", doc.contact_person, "mobile_no")
-			if mobile:
-				return normalize_phone(mobile)
-		# fallback: customer mobile
-		if doc.get("customer"):
-			mobile = frappe.db.get_value("Customer", doc.customer, "mobile_no")
-			return normalize_phone(mobile)
+			num = normalize_phone(doc.contact_mobile)
+			if num:
+				return num
+		num = _contact_phone(doc.get("contact_person"))
+		if num:
+			return num
+		num = _party_phone("Customer", doc.get("customer"))
+		if num:
+			return num
+		return _address_phone(doc.get("customer_address"), doc.get("shipping_address"))
 
-	elif doctype == "Support Ticket":
+	if doctype == "Support Ticket":
 		return normalize_phone(doc.get("contact_no"))
 
 	return None
@@ -323,6 +410,13 @@ def maybe_auto_send(doc, method: str | None = None):
 			return
 
 		if not get_recipient_number(doc):
+			frappe.msgprint(
+				_("WhatsApp not sent: no mobile number on {0} {1}. Add Contact Mobile or Address Phone.").format(
+					doc.doctype, doc.name
+				),
+				indicator="orange",
+				alert=True,
+			)
 			frappe.log_error(
 				title=f"WhatsApp auto-send skipped: no mobile ({doc.doctype} {doc.name})",
 				message="No recipient number",
@@ -334,6 +428,17 @@ def maybe_auto_send(doc, method: str | None = None):
 			frappe.log_error(
 				title=f"WhatsApp auto-send failed: {doc.doctype} {doc.name}",
 				message=frappe.as_json(result),
+			)
+			frappe.msgprint(
+				_("WhatsApp send failed for {0}. Check WhatsApp Message Log.").format(doc.name),
+				indicator="red",
+				alert=True,
+			)
+		else:
+			frappe.msgprint(
+				_("WhatsApp sent to {0}").format(result.get("_to") or ""),
+				indicator="green",
+				alert=True,
 			)
 	except Exception:
 		frappe.log_error(title=f"WhatsApp auto-send error: {doc.doctype} {doc.name}")
