@@ -130,6 +130,40 @@ def resolve_template_ref(value: str | None) -> tuple[str | None, str | None]:
 	return value, None
 
 
+def _template_header_type(template_ref: str | None) -> str:
+	"""Return header_type for a WhatsApp Message Template link or Meta name."""
+	if not template_ref:
+		return "None"
+	if frappe.db.exists("WhatsApp Message Template", template_ref):
+		return frappe.db.get_value("WhatsApp Message Template", template_ref, "header_type") or "None"
+	# Look up by template_name-language style
+	name = frappe.db.get_value(
+		"WhatsApp Message Template",
+		{"template_name": template_ref},
+		"header_type",
+	)
+	return name or "None"
+
+
+def _send_document_message(to: str, media_id: str, filename: str, caption: str | None = None) -> dict:
+	"""Send a standalone WhatsApp document message (needs open customer window)."""
+	from ths_whatsapp.api.whatsapp import _get_settings, _graph_request
+
+	settings, token = _get_settings()
+	api_version = settings.api_version or "v25.0"
+	url = f"https://graph.facebook.com/{api_version}/{settings.phone_number_id}/messages"
+	document = {"id": media_id, "filename": filename}
+	if caption:
+		document["caption"] = caption[:1024]
+	payload = {
+		"messaging_product": "whatsapp",
+		"to": to,
+		"type": "document",
+		"document": document,
+	}
+	return _graph_request(url, token=token, method="POST", payload=payload)
+
+
 def _send_for_doc(doc, to: str | None = None, template: str | None = None) -> dict:
 	settings = frappe.get_single("WhatsApp Settings")
 	if not settings.enabled:
@@ -153,6 +187,20 @@ def _send_for_doc(doc, to: str | None = None, template: str | None = None) -> di
 	language = language or settings.default_template_lang or "en"
 	body_params = build_body_params(doc)
 
+	header_document = None
+	pdf_followup = None
+	header_type = _template_header_type(linked)
+	# Quotation / Sales Invoice: attach PDF with DOCUMENT header, else follow-up document msg
+	if doc.doctype in ("Quotation", "Sales Invoice"):
+		from ths_whatsapp.api.media import generate_doctype_pdf, upload_media_for_send
+
+		pdf_bytes, filename = generate_doctype_pdf(doc.doctype, doc.name)
+		media_id = upload_media_for_send(pdf_bytes, filename, "application/pdf")
+		if header_type == "Document":
+			header_document = {"id": media_id, "filename": filename}
+		else:
+			pdf_followup = {"id": media_id, "filename": filename}
+
 	from ths_whatsapp.api.whatsapp import (
 		_create_log,
 		send_template_request,
@@ -163,6 +211,7 @@ def _send_for_doc(doc, to: str | None = None, template: str | None = None) -> di
 		template=template_name,
 		language=language,
 		body_params=body_params,
+		header_document=header_document,
 	)
 	log_name = _create_log(
 		to=to,
@@ -174,10 +223,29 @@ def _send_for_doc(doc, to: str | None = None, template: str | None = None) -> di
 		reference_doctype=doc.doctype,
 		reference_name=doc.name,
 	)
+
+	pdf_sent = bool(header_document)
+	pdf_response = None
+	if pdf_followup and not response.get("error"):
+		pdf_response = _send_document_message(
+			to=to,
+			media_id=pdf_followup["id"],
+			filename=pdf_followup["filename"],
+			caption=f"{doc.doctype} {doc.name}",
+		)
+		pdf_sent = not bool(pdf_response.get("error"))
+		if pdf_response.get("error"):
+			frappe.log_error(
+				title=f"WhatsApp PDF follow-up failed: {doc.doctype} {doc.name}",
+				message=frappe.as_json(pdf_response),
+			)
+
 	response["_log"] = log_name
 	response["_to"] = to
 	response["_template"] = template_name
 	response["_body_params"] = body_params
+	response["_pdf"] = pdf_sent
+	response["_pdf_response"] = pdf_response
 	return response
 
 

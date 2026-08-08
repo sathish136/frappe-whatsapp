@@ -75,8 +75,13 @@ def send_template_request(
 	template: str | None = None,
 	language: str | None = None,
 	body_params: list[str] | None = None,
+	header_document: dict | None = None,
 ) -> tuple[dict, dict]:
-	"""Send a template message. Returns (response, request_payload)."""
+	"""Send a template message. Returns (response, request_payload).
+
+	header_document: optional {"id": media_id, "filename": "..."} or
+	{"link": "https://...", "filename": "..."} for DOCUMENT header templates.
+	"""
 	settings, token = _get_settings()
 	template = template or settings.default_template
 	language = language or settings.default_template_lang or "en"
@@ -93,13 +98,27 @@ def send_template_request(
 		},
 	}
 
+	components: list[dict] = []
+	if header_document:
+		doc_param: dict[str, Any] = {"type": "document", "document": {}}
+		if header_document.get("id"):
+			doc_param["document"]["id"] = header_document["id"]
+		elif header_document.get("link"):
+			doc_param["document"]["link"] = header_document["link"]
+		if header_document.get("filename"):
+			doc_param["document"]["filename"] = header_document["filename"]
+		components.append({"type": "header", "parameters": [doc_param]})
+
 	if body_params:
-		payload["template"]["components"] = [
+		components.append(
 			{
 				"type": "body",
 				"parameters": [{"type": "text", "text": str(p)} for p in body_params],
 			}
-		]
+		)
+
+	if components:
+		payload["template"]["components"] = components
 
 	url = f"https://graph.facebook.com/{api_version}/{phone_number_id}/messages"
 	response = _graph_request(url, token=token, method="POST", payload=payload)
@@ -208,15 +227,35 @@ def _build_components_from_doc(doc) -> list[dict]:
 			}
 		)
 	elif header_type in ("Image", "Video", "Document"):
-		# Meta requires a media sample handle for template creation.
-		# Local attach is used for ERP preview; submit needs Meta upload handle.
-		# For now create with format + note — Media templates should use sample via Meta Manager
-		# if handle upload is not configured. Prefer Text header for API create until App ID upload is added.
-		frappe.throw(
-			_(
-				"Header Type {0} needs Meta media upload (header_handle). "
-				"Use Header Type = Text for API submit, or create Image/Video/Document templates in WhatsApp Manager and Sync."
-			).format(header_type)
+		from ths_whatsapp.api.media import upload_header_handle
+
+		file_url = doc.get("header_media") or doc.get("header_image")
+		if not file_url:
+			frappe.throw(
+				_("Upload a sample {0} in Header Media before submitting to Meta.").format(header_type)
+			)
+		file_doc = frappe.get_doc("File", {"file_url": file_url})
+		file_path = file_doc.get_full_path()
+		with open(file_path, "rb") as f:
+			file_bytes = f.read()
+		filename = file_doc.file_name or file_url.rsplit("/", 1)[-1]
+		mime = {
+			"Image": "image/jpeg",
+			"Video": "video/mp4",
+			"Document": "application/pdf",
+		}.get(header_type, "application/octet-stream")
+		# Prefer extension-based mime when available
+		if filename.lower().endswith(".png"):
+			mime = "image/png"
+		elif filename.lower().endswith(".pdf"):
+			mime = "application/pdf"
+		handle = upload_header_handle(file_bytes, filename, mime)
+		components.append(
+			{
+				"type": "HEADER",
+				"format": header_type.upper(),
+				"example": {"header_handle": [handle]},
+			}
 		)
 
 	body: dict[str, Any] = {"type": "BODY", "text": doc.body_text}
