@@ -24,4 +24,3 @@ def after_install():
 		settings.invoice_due_reminder_days = 3
 	settings.flags.ignore_permissions = True
 	settings.save()
-	frappe.db.commit()

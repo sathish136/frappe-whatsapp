@@ -46,16 +46,6 @@ frappe = ">=13.0.0,<17.0.0"
 
 Supports **Frappe v13**, **v14**, **v15**, and **v16**.
 
-## Install
-
-```bash
-cd /path/to/frappe-bench
-bench get-app https://github.com/sathish136/frappe-whatsapp.git --branch main
-bench --site your.site install-app ths_whatsapp
-```
-
-> App Python package name is `ths_whatsapp`.
-
 ## Setup
 
 1. Open **WhatsApp Settings**

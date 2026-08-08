@@ -96,7 +96,6 @@ def ensure_standard_templates(submit_to_meta: bool = True) -> dict:
 				errors.append({"template": doc.name, "error": str(e)})
 
 	_apply_document_settings()
-	frappe.db.commit()
 	return {"created": created, "submitted": submitted, "errors": errors}
 
 

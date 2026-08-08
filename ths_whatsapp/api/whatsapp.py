@@ -148,7 +148,6 @@ def _create_log(
 		}
 	)
 	doc.insert(ignore_permissions=True)
-	frappe.db.commit()
 	return doc.name
 
 
@@ -278,7 +277,6 @@ def submit_template_for_approval(name: str) -> dict:
 	doc.last_synced_on = frappe.utils.now_datetime()
 	doc.rejection_reason = None
 	doc.save(ignore_permissions=True)
-	frappe.db.commit()
 
 	return {
 		"ok": True,
@@ -339,7 +337,6 @@ def refresh_template_status(name: str) -> dict:
 	# rejected_reason sometimes in quality_score or rejected_reason fields
 	doc.rejection_reason = match.get("rejected_reason") or match.get("rejection_info") or doc.rejection_reason
 	doc.save(ignore_permissions=True)
-	frappe.db.commit()
 	return {"status": doc.status, "meta_template_id": doc.meta_template_id}
 
 
@@ -419,7 +416,6 @@ def sync_message_templates(waba_id: str | None = None) -> dict:
 			docname = doc.name
 		synced_names.append(docname)
 
-	frappe.db.commit()
 	return {
 		"created": created,
 		"updated": updated,
