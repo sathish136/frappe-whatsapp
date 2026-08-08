@@ -1,0 +1,278 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-08-06 16:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "help_html",
+  "section_credentials",
+  "api_version",
+  "phone_number_id",
+  "column_break_cred",
+  "waba_id",
+  "access_token",
+  "section_when",
+  "quotation_send_when",
+  "quotation_template",
+  "column_break_q",
+  "sales_invoice_send_when",
+  "sales_invoice_template",
+  "invoice_due_reminder_enabled",
+  "invoice_due_reminder_days",
+  "column_break_si",
+  "support_ticket_send_when",
+  "support_ticket_template",
+  "section_defaults",
+  "default_template",
+  "default_template_lang",
+  "default_body_param_count",
+  "column_break_defaults",
+  "default_to_number",
+  "section_test",
+  "test_body_params",
+  "auto_send_quotation",
+  "auto_send_sales_invoice",
+  "auto_send_support_ticket"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "description": "Master switch. When off, all WhatsApp sending is stopped.",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable WhatsApp"
+  },
+  {
+   "fieldname": "help_html",
+   "fieldtype": "HTML",
+   "label": "Help",
+   "options": "<div class=\"alert alert-info\" style=\"margin:0 0 12px 0\">Choose when WhatsApp messages should be sent for Quotation, Sales Invoice, and Support Ticket. The <b>WhatsApp → Send WhatsApp</b> button on each form is always available for manual send.</div>"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_credentials",
+   "fieldtype": "Section Break",
+   "label": "1. Meta Cloud API Credentials"
+  },
+  {
+   "default": "v25.0",
+   "description": "Graph API version, e.g. v25.0",
+   "fieldname": "api_version",
+   "fieldtype": "Data",
+   "label": "API Version",
+   "reqd": 1
+  },
+  {
+   "description": "WhatsApp Phone Number ID from Meta Developer Console",
+   "fieldname": "phone_number_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Phone Number ID"
+  },
+  {
+   "fieldname": "column_break_cred",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "WhatsApp Business Account (WABA) ID — used to list templates",
+   "fieldname": "waba_id",
+   "fieldtype": "Data",
+   "label": "WABA ID"
+  },
+  {
+   "description": "Permanent / system user access token",
+   "fieldname": "access_token",
+   "fieldtype": "Password",
+   "label": "Access Token"
+  },
+  {
+   "fieldname": "section_when",
+   "fieldtype": "Section Break",
+   "label": "2. When to Send Message"
+  },
+  {
+   "default": "Manual Only",
+   "description": "Send automatically when Quotation is submitted, or use the Manual button only",
+   "fieldname": "quotation_send_when",
+   "fieldtype": "Select",
+   "label": "Quotation — When to Send",
+   "options": "Manual Only\nOn Submit"
+  },
+  {
+   "default": "payment_alert-en",
+   "description": "Synced Meta template (Sync from Meta first). payment_alert uses 4 params.",
+   "fieldname": "quotation_template",
+   "fieldtype": "Link",
+   "label": "Quotation Template",
+   "options": "WhatsApp Message Template"
+  },
+  {
+   "fieldname": "column_break_q",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Manual Only",
+   "description": "Send automatically when Sales Invoice is submitted, or use the Manual button only",
+   "fieldname": "sales_invoice_send_when",
+   "fieldtype": "Select",
+   "label": "Sales Invoice — When to Send",
+   "options": "Manual Only\nOn Submit"
+  },
+  {
+   "default": "payment_alert-en",
+   "description": "Template for invoice due reminders (name, amount, invoice no, due date)",
+   "fieldname": "sales_invoice_template",
+   "fieldtype": "Link",
+   "label": "Sales Invoice / Due Reminder Template",
+   "options": "WhatsApp Message Template"
+  },
+  {
+   "default": "1",
+   "description": "Send WhatsApp for invoices with pending due amount on a recurring schedule",
+   "fieldname": "invoice_due_reminder_enabled",
+   "fieldtype": "Check",
+   "label": "Invoice Due Reminder Enabled"
+  },
+  {
+   "default": "3",
+   "depends_on": "invoice_due_reminder_enabled",
+   "description": "Send reminder once every N days for outstanding invoices (due date reached)",
+   "fieldname": "invoice_due_reminder_days",
+   "fieldtype": "Int",
+   "label": "Due Reminder Every (Days)",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_break_si",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Manual Only",
+   "description": "Send automatically when a ticket is created or status changes, or use the Manual button only",
+   "fieldname": "support_ticket_send_when",
+   "fieldtype": "Select",
+   "label": "Support Ticket — When to Send",
+   "options": "Manual Only\nOn Create\nOn Status Change\nOn Create and Status Change"
+  },
+  {
+   "default": "payment_alert-en",
+   "description": "Synced Meta template for Support Ticket",
+   "fieldname": "support_ticket_template",
+   "fieldtype": "Link",
+   "label": "Support Ticket Template",
+   "options": "WhatsApp Message Template"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:0",
+   "fieldname": "section_defaults",
+   "fieldtype": "Section Break",
+   "label": "3. Defaults & Test"
+  },
+  {
+   "default": "payment_alert-en",
+   "fieldname": "default_template",
+   "fieldtype": "Link",
+   "label": "Default Template",
+   "options": "WhatsApp Message Template",
+   "reqd": 1
+  },
+  {
+   "default": "en",
+   "fetch_from": "default_template.language",
+   "fieldname": "default_template_lang",
+   "fieldtype": "Data",
+   "label": "Default Template Language",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "default_template.body_param_count",
+   "fieldname": "default_body_param_count",
+   "fieldtype": "Int",
+   "label": "Default Template Param Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_defaults",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "E.164 without +, e.g. 94771487070",
+   "fieldname": "default_to_number",
+   "fieldtype": "Data",
+   "label": "Default To Number (Test)"
+  },
+  {
+   "fieldname": "section_test",
+   "fieldtype": "Section Break",
+   "label": "Test Send"
+  },
+  {
+   "description": "Comma-separated body variables matching template param count (payment_alert needs 4: Name, Amount, Invoice No, Due Date)",
+   "fieldname": "test_body_params",
+   "fieldtype": "Small Text",
+   "label": "Test Body Params"
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_send_quotation",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Auto Send Quotation (legacy)"
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_send_sales_invoice",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Auto Send Sales Invoice (legacy)"
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_send_support_ticket",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Auto Send Support Ticket (legacy)"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-08 10:15:00.000000",
+ "modified_by": "Administrator",
+ "module": "WhatsApp Meta",
+ "name": "WhatsApp Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Accounts Manager",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

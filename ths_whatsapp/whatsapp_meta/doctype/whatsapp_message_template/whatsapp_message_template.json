@@ -1,0 +1,237 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 0,
+ "autoname": "format:{template_name}-{language}",
+ "creation": "2026-08-08 10:10:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "template_name",
+  "language",
+  "status",
+  "related_doctype",
+  "column_break_1",
+  "category",
+  "body_param_count",
+  "meta_template_id",
+  "last_synced_on",
+  "rejection_reason",
+  "section_content",
+  "header_type",
+  "header_text",
+  "header_media",
+  "header_help",
+  "body_text",
+  "footer_text",
+  "sample_values",
+  "column_break_preview",
+  "preview_html",
+  "section_components",
+  "components_json"
+ ],
+ "fields": [
+  {
+   "description": "Lowercase letters, numbers and underscores only (e.g. payment_reminder)",
+   "fieldname": "template_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Template Name",
+   "reqd": 1
+  },
+  {
+   "default": "en",
+   "description": "Language code as in Meta (e.g. en)",
+   "fieldname": "language",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Language",
+   "reqd": 1
+  },
+  {
+   "default": "DRAFT",
+   "description": "PENDING = waiting for Meta approval",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "DRAFT\nPENDING\nAPPROVED\nREJECTED\nPAUSED\nDISABLED\nIN_APPEAL\nUNKNOWN",
+   "read_only": 1
+  },
+  {
+   "description": "ERPNext DocType this template is used for (Quotation, Sales Invoice, Support Ticket, …)",
+   "fieldname": "related_doctype",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Related DocType",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "UTILITY",
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Category",
+   "options": "UTILITY\nMARKETING\nAUTHENTICATION",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "body_param_count",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Body Param Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "meta_template_id",
+   "fieldtype": "Data",
+   "label": "Meta Template ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_synced_on",
+   "fieldtype": "Datetime",
+   "label": "Last Synced On",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.status=='REJECTED'",
+   "fieldname": "rejection_reason",
+   "fieldtype": "Small Text",
+   "label": "Rejection Reason",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_content",
+   "fieldtype": "Section Break",
+   "label": "Template Content"
+  },
+  {
+   "default": "None",
+   "description": "Header can be Text, Image, Video, or Document (Meta template header types)",
+   "fieldname": "header_type",
+   "fieldtype": "Select",
+   "label": "Header Type",
+   "options": "None\nText\nImage\nVideo\nDocument"
+  },
+  {
+   "depends_on": "eval:doc.header_type=='Text'",
+   "description": "Header text shown at the top of the message",
+   "fieldname": "header_text",
+   "fieldtype": "Data",
+   "label": "Header Text"
+  },
+  {
+   "depends_on": "eval:['Image','Video','Document'].includes(doc.header_type)",
+   "description": "Sample media for preview / Meta approval (Image JPG/PNG, Video MP4, Document PDF)",
+   "fieldname": "header_media",
+   "fieldtype": "Attach",
+   "label": "Header Media Sample"
+  },
+  {
+   "fieldname": "header_help",
+   "fieldtype": "HTML",
+   "label": "Header Help",
+   "options": "<div class=\"text-muted\" style=\"margin-bottom:8px\">Header types supported by WhatsApp: <b>Text</b>, <b>Image</b>, <b>Video</b>, <b>Document</b>. Body is always text (with optional {{1}} variables). Footer is optional text.</div>"
+  },
+  {
+   "description": "Use {{1}}, {{2}}, … for variables. Example: Hello {{1}}, payment of {{2}} is due on {{3}}.",
+   "fieldname": "body_text",
+   "fieldtype": "Long Text",
+   "label": "Body Text",
+   "reqd": 1
+  },
+  {
+   "fieldname": "footer_text",
+   "fieldtype": "Data",
+   "label": "Footer Text"
+  },
+  {
+   "description": "Sample values for Meta review, comma-separated, one per {{n}} (required when body has variables)",
+   "fieldname": "sample_values",
+   "fieldtype": "Small Text",
+   "label": "Sample Values"
+  },
+  {
+   "fieldname": "column_break_preview",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "preview_html",
+   "fieldtype": "HTML",
+   "label": "Preview"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_components",
+   "fieldtype": "Section Break",
+   "label": "Raw Components (from Meta)"
+  },
+  {
+   "fieldname": "components_json",
+   "fieldtype": "Code",
+   "label": "Components JSON",
+   "options": "JSON",
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-08-08 10:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "WhatsApp Meta",
+ "name": "WhatsApp Message Template",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "template_name,language,status,category,related_doctype",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "template_name",
+ "track_changes": 1
+}

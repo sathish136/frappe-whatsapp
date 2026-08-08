@@ -1,0 +1,21 @@
+[project]
+name = "ths_whatsapp"
+authors = [
+    { name = "THS Solution", email = "info@thssolution.com"}
+]
+description = "WhatsApp Meta Cloud API integration for ERPNext"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = [
+    # "frappe~=15.0.0" # Installed and managed by bench.
+]
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench.dev-dependencies]
+
+[deploy.dependencies.apt]
+packages = []
